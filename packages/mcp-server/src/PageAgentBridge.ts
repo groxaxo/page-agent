@@ -10,8 +10,26 @@ import {
 	browserSessionInfoSchema,
 	browserStateSchema,
 } from '@page-agent/browser-bridge'
+import type { PageController } from '@page-agent/page-controller'
 
 import { LocalBridgeServer } from './LocalBridgeServer'
+
+export type PageAgentCorePageController = Pick<
+	PageController,
+	| 'getLastUpdateTime'
+	| 'getBrowserState'
+	| 'updateTree'
+	| 'cleanUpHighlights'
+	| 'clickElement'
+	| 'inputText'
+	| 'selectOption'
+	| 'scroll'
+	| 'scrollHorizontally'
+	| 'executeJavascript'
+	| 'showMask'
+	| 'hideMask'
+	| 'dispose'
+>
 
 export class HttpBrowserBridge implements BrowserBridge {
 	private readonly bridgeServer: LocalBridgeServer
@@ -132,7 +150,7 @@ export class HttpBrowserBridge implements BrowserBridge {
 	}
 }
 
-export class BridgePageControllerAdapter {
+export class BridgePageControllerAdapter implements PageAgentCorePageController {
 	private readonly bridge: BrowserBridge
 	private readonly sessionId: string
 	private readonly allowScriptExecution: boolean

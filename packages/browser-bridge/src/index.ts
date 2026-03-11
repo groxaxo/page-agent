@@ -246,17 +246,23 @@ export function getOriginFromUrl(url: string): string {
 }
 
 export function createSessionId(tabId: number): string {
+	// The shared bridge treats sessions as transport-neutral identifiers so
+	// Node-side code never needs to depend on browser-extension tab objects.
 	return `tab:${tabId}`
 }
 
 export function getTabIdFromSessionId(sessionId: string): number {
 	if (!sessionId.startsWith('tab:')) {
-		throw new Error(`Unsupported session ID: ${sessionId}`)
+		throw new Error(
+			`Unsupported session ID: ${sessionId}. Session IDs must start with the "tab:" prefix.`
+		)
 	}
 
 	const tabId = Number(sessionId.slice(4))
 	if (!Number.isInteger(tabId)) {
-		throw new Error(`Invalid session ID: ${sessionId}`)
+		throw new Error(
+			`Invalid session ID: ${sessionId}. Session IDs must contain a valid integer after the "tab:" prefix.`
+		)
 	}
 
 	return tabId

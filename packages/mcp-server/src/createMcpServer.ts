@@ -15,7 +15,11 @@ import {
 import { PageAgentCore } from '@page-agent/core'
 import * as z from 'zod/v4'
 
-import { BridgePageControllerAdapter, HttpBrowserBridge } from './PageAgentBridge'
+import {
+	BridgePageControllerAdapter,
+	HttpBrowserBridge,
+	type PageAgentCorePageController,
+} from './PageAgentBridge'
 import type { PageAgentMcpServerConfig } from './config'
 
 const runPageAgentTaskInputSchema = z.object({
@@ -251,7 +255,7 @@ export function createMcpServer({ bridge, config, log }: ServerDependencies): {
 				)
 			}
 
-			const pageController = new BridgePageControllerAdapter(
+			const pageController: PageAgentCorePageController = new BridgePageControllerAdapter(
 				bridge,
 				input.sessionId,
 				config.allowScriptExecution && (input.experimentalScriptExecutionTool ?? false)
@@ -266,7 +270,8 @@ export function createMcpServer({ bridge, config, log }: ServerDependencies): {
 				language: input.language,
 				experimentalScriptExecutionTool:
 					config.allowScriptExecution && (input.experimentalScriptExecutionTool ?? false),
-				pageController: pageController as never,
+				pageController:
+					pageController as unknown as import('@page-agent/page-controller').PageController,
 			})
 
 			try {

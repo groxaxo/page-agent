@@ -2,7 +2,6 @@ import {
 	type BrowserBridgeCommand,
 	type BrowserBridgeCommandResult,
 	type BrowserBridgeRequest,
-	type BrowserSessionInfo,
 	LOCAL_BRIDGE_DEFAULT_HOST,
 	browserBridgePollRequestSchema,
 	browserBridgeRespondRequestSchema,
@@ -43,13 +42,13 @@ export class LocalBridgeServer {
 
 	private readonly config: Pick<
 		PageAgentMcpServerConfig,
-		'bridgeHost' | 'bridgePort' | 'bridgeToken' | 'commandTimeoutMs'
+		'bridgeHost' | 'bridgePort' | 'bridgeToken' | 'commandTimeoutMs' | 'bridgeUrl'
 	>
 
 	constructor(
 		config: Pick<
 			PageAgentMcpServerConfig,
-			'bridgeHost' | 'bridgePort' | 'bridgeToken' | 'commandTimeoutMs'
+			'bridgeHost' | 'bridgePort' | 'bridgeToken' | 'commandTimeoutMs' | 'bridgeUrl'
 		>
 	) {
 		this.config = config
@@ -104,7 +103,8 @@ export class LocalBridgeServer {
 				reject(
 					new Error(
 						`Timed out waiting for the browser bridge to handle ${request.method}. ` +
-							'Make sure the Page Agent extension is installed and able to reach the local bridge server.'
+							`Make sure the Page Agent extension is installed and able to reach ` +
+							`${this.config.bridgeUrl}.`
 					)
 				)
 			}, this.config.commandTimeoutMs)
@@ -142,10 +142,6 @@ export class LocalBridgeServer {
 
 	getConnectedRuntimeCount(): number {
 		return this.runtimes.size
-	}
-
-	getKnownSessions(): BrowserSessionInfo[] {
-		return []
 	}
 
 	private async handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {

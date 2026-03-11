@@ -8,8 +8,10 @@ import {
 
 import { executeBridgeCommand } from './bridgeHandlers'
 
+declare const __EXT_VERSION__: string
+
 const PREFIX = '[PageAgentBridge.Client]'
-const POLL_INTERVAL_MS = 25_000
+const POLL_WAIT_MS = 25_000
 const RETRY_DELAY_MS = 3_000
 
 interface BridgeSettings {
@@ -68,7 +70,7 @@ export class BrowserBridgeClient {
 			body: JSON.stringify({
 				runtimeId: chrome.runtime.id,
 				token: settings.token,
-				waitMs: POLL_INTERVAL_MS,
+				waitMs: POLL_WAIT_MS,
 				extensionVersion: __EXT_VERSION__,
 			}),
 		})

@@ -10,7 +10,7 @@ import { isContentScriptAllowed } from '@/agent/contentScriptGuards'
 
 const PREFIX = '[PageAgentBridge]'
 
-function debug(...messages: any[]) {
+function debug(...messages: unknown[]) {
 	console.debug(`\x1b[90m${PREFIX}\x1b[0m`, ...messages)
 }
 

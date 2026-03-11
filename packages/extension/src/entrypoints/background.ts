@@ -2,19 +2,24 @@ import { handlePageControlMessage } from '@/agent/RemotePageController.backgroun
 import { handleTabControlMessage, setupTabChangeEvents } from '@/agent/TabsController.background'
 import { BrowserBridgeClient } from '@/mcp/BrowserBridgeClient'
 
+type BackgroundWithBridge = typeof globalThis & {
+	__PAGE_AGENT_MCP_BRIDGE__?: BrowserBridgeClient
+}
+
+function getBridgeClient(): BrowserBridgeClient {
+	const background = globalThis as BackgroundWithBridge
+
+	if (!background.__PAGE_AGENT_MCP_BRIDGE__) {
+		background.__PAGE_AGENT_MCP_BRIDGE__ = new BrowserBridgeClient()
+	}
+
+	return background.__PAGE_AGENT_MCP_BRIDGE__
+}
+
 export default defineBackground(() => {
 	console.log('[Background] Service Worker started')
 
-	if (
-		!(globalThis as { __PAGE_AGENT_MCP_BRIDGE__?: BrowserBridgeClient }).__PAGE_AGENT_MCP_BRIDGE__
-	) {
-		;(globalThis as { __PAGE_AGENT_MCP_BRIDGE__?: BrowserBridgeClient }).__PAGE_AGENT_MCP_BRIDGE__ =
-			new BrowserBridgeClient()
-	}
-
-	;(
-		globalThis as { __PAGE_AGENT_MCP_BRIDGE__?: BrowserBridgeClient }
-	).__PAGE_AGENT_MCP_BRIDGE__?.start()
+	getBridgeClient().start()
 
 	// tab change events
 

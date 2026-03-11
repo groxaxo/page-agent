@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { existsSync, realpathSync } from 'node:fs'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
@@ -38,10 +39,16 @@ export async function startPageAgentMcpServer(): Promise<void> {
 	log('stdio MCP transport connected')
 }
 
-const isEntrypoint =
-	process.argv[1] != null && pathToFileURL(process.argv[1]).href === import.meta.url
+function isEntrypoint(): boolean {
+	const entry = process.argv[1]
+	if (!entry || !existsSync(entry)) {
+		return false
+	}
 
-if (isEntrypoint) {
+	return pathToFileURL(realpathSync(entry)).href === import.meta.url
+}
+
+if (isEntrypoint()) {
 	startPageAgentMcpServer().catch((error) => {
 		process.stderr.write(
 			`[page-agent-mcp] failed to start: ${error instanceof Error ? error.stack || error.message : String(error)}\n`

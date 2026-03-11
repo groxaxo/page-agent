@@ -23,6 +23,8 @@ export interface PageAgentMcpServerConfig {
 	}
 }
 
+declare const __PAGE_AGENT_MCP_SERVER_VERSION__: string
+
 export function readServerConfigFromEnv(): PageAgentMcpServerConfig {
 	const bridgeHost = process.env.PAGE_AGENT_BRIDGE_HOST || LOCAL_BRIDGE_DEFAULT_HOST
 	const bridgePort = integerFromEnv('PAGE_AGENT_BRIDGE_PORT', LOCAL_BRIDGE_DEFAULT_PORT)
@@ -32,9 +34,9 @@ export function readServerConfigFromEnv(): PageAgentMcpServerConfig {
 
 	return {
 		name: process.env.PAGE_AGENT_MCP_SERVER_NAME || 'page-agent',
-		version: process.env.npm_package_version || '1.5.5',
+		version: process.env.npm_package_version || __PAGE_AGENT_MCP_SERVER_VERSION__,
 		bridgeHost,
-		bridgePort: integerFromEnv('PAGE_AGENT_BRIDGE_PORT', LOCAL_BRIDGE_DEFAULT_PORT),
+		bridgePort,
 		bridgeUrl,
 		bridgeToken: process.env.PAGE_AGENT_BRIDGE_TOKEN || undefined,
 		commandTimeoutMs: integerFromEnv('PAGE_AGENT_BRIDGE_TIMEOUT_MS', 20_000),
@@ -58,7 +60,9 @@ function integerFromEnv(name: string, fallback: number): number {
 
 	const parsed = Number.parseInt(raw, 10)
 	if (!Number.isFinite(parsed)) {
-		throw new Error(`Invalid integer environment variable ${name}: ${raw}`)
+		throw new Error(
+			`Invalid integer environment variable ${name}: ${raw}. It must be a valid integer number.`
+		)
 	}
 
 	return parsed
@@ -72,7 +76,9 @@ function optionalIntegerFromEnv(name: string): number | undefined {
 
 	const parsed = Number.parseInt(raw, 10)
 	if (!Number.isFinite(parsed)) {
-		throw new Error(`Invalid integer environment variable ${name}: ${raw}`)
+		throw new Error(
+			`Invalid integer environment variable ${name}: ${raw}. It must be a valid integer number.`
+		)
 	}
 
 	return parsed
