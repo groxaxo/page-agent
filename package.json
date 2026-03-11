@@ -8,8 +8,10 @@
         "packages/ui",
         "packages/llms",
         "packages/core",
+        "packages/browser-bridge",
         "packages/page-agent",
         "packages/extension",
+        "packages/mcp-server",
         "packages/website"
     ],
     "description": "AI-powered UI agent for web applications",
@@ -26,6 +28,7 @@
     "scripts": {
         "start": "npm run dev --workspace=@page-agent/website",
         "dev:ext": "npm run dev -w @page-agent/ext",
+        "dev:mcp": "npm run dev --workspace=@page-agent/mcp-server",
         "dev:demo": "npm run dev:demo --workspace=page-agent",
         "build": "npm run build:libs && npm run build:website",
         "build:libs": "npm run build --workspaces --if-present",

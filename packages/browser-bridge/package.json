@@ -1,0 +1,33 @@
+{
+    "name": "@page-agent/browser-bridge",
+    "version": "1.5.5",
+    "type": "module",
+    "main": "./dist/lib/browser-bridge.js",
+    "module": "./dist/lib/browser-bridge.js",
+    "types": "./dist/lib/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/lib/index.d.ts",
+            "import": "./dist/lib/browser-bridge.js",
+            "default": "./dist/lib/browser-bridge.js"
+        }
+    },
+    "files": [
+        "dist/"
+    ],
+    "description": "Shared bridge contract for the Page Agent MCP server and browser runtime",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/alibaba/page-agent.git",
+        "directory": "packages/browser-bridge"
+    },
+    "scripts": {
+        "build": "vite build",
+        "prepublishOnly": "node -e \"const fs=require('fs');['LICENSE'].forEach(f=>fs.copyFileSync('../../'+f,f))\"",
+        "postpublish": "node -e \"['LICENSE'].forEach(f=>{try{require('fs').unlinkSync(f)}catch{}})\""
+    },
+    "dependencies": {
+        "zod": "^4.3.6"
+    }
+}
