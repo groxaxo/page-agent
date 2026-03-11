@@ -30,6 +30,9 @@ export default function App() {
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 
 	const { status, history, activity, currentTask, config, execute, stop, configure } = useAgent()
+	const isConfigured = Boolean(
+		config?.baseURL?.trim() && config.apiKey?.trim() && config.model?.trim()
+	)
 
 	// Persist session when task finishes
 	const prevStatusRef = useRef(status)
@@ -148,6 +151,12 @@ export default function App() {
 
 			{/* Content */}
 			<main className="flex-1 overflow-hidden flex flex-col">
+				{!isConfigured && (
+					<div className="border-b px-3 py-2 bg-amber-500/5 text-[11px] text-muted-foreground">
+						Add any OpenAI-compatible model in Settings before running tasks.
+					</div>
+				)}
+
 				{/* Current task */}
 				{currentTask && (
 					<div className="border-b px-3 py-2 bg-muted/30">
@@ -177,11 +186,15 @@ export default function App() {
 				<InputGroup className="relative rounded-lg">
 					<InputGroupTextarea
 						ref={textareaRef}
-						placeholder="Describe your task... (Enter to send)"
+						placeholder={
+							isConfigured
+								? 'Describe your task... (Enter to send)'
+								: 'Open Settings and add your model to get started'
+						}
 						value={inputValue}
 						onChange={(e) => setInputValue(e.target.value)}
 						onKeyDown={handleKeyDown}
-						disabled={isRunning}
+						disabled={isRunning || !isConfigured}
 						className="text-xs pr-12 min-h-10"
 					/>
 					<InputGroupAddon align="inline-end" className="absolute bottom-0 right-0">
@@ -199,7 +212,7 @@ export default function App() {
 								size="icon-sm"
 								variant="default"
 								onClick={() => handleSubmit()}
-								disabled={!inputValue.trim()}
+								disabled={!inputValue.trim() || !isConfigured}
 								className="size-7 cursor-pointer"
 							>
 								<Send className="size-3" />

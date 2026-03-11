@@ -37,6 +37,10 @@ export interface UseAgentResult {
 	configure: (config: ExtConfig) => Promise<void>
 }
 
+function hasCompleteConfig(config: ExtConfig | null): config is ExtConfig {
+	return Boolean(config?.baseURL?.trim() && config.apiKey?.trim() && config.model?.trim())
+}
+
 export function useAgent(): UseAgentResult {
 	const agentRef = useRef<MultiPageAgent | null>(null)
 	const [status, setStatus] = useState<AgentStatus>('idle')
@@ -65,7 +69,10 @@ export function useAgent(): UseAgentResult {
 	}, [])
 
 	useEffect(() => {
-		if (!config) return
+		if (!hasCompleteConfig(config)) {
+			agentRef.current = null
+			return
+		}
 
 		const { systemInstruction, ...agentConfig } = config
 		const agent = new MultiPageAgent({

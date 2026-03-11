@@ -4,7 +4,6 @@ export const CDN_DEMO_URL =
 export const CDN_DEMO_CN_URL =
 	'https://registry.npmmirror.com/page-agent/1.5.5/files/dist/iife/page-agent.demo.js'
 
-// Demo LLM for website testing (homepage quick trial uses flash)
-export const DEMO_MODEL = 'qwen3.5-flash'
+// Demo LLM for website testing
 export const DEMO_BASE_URL = 'https://page-ag-testing-ohftxirgbn.cn-shanghai.fcapp.run'
 export const DEMO_API_KEY = 'NA'
