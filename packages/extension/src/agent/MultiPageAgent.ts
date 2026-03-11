@@ -25,7 +25,7 @@ export class MultiPageAgent extends PageAgentCore {
 
 		// system prompt - auto-detect language if not specified
 		const language = config.language ?? detectLanguage()
-		const targetLanguage = language === 'zh-CN' ? '中文' : 'English'
+		const targetLanguage = language === 'zh-CN' ? 'Chinese' : 'English'
 		const systemPrompt = SYSTEM_PROMPT.replace(
 			/Default working language: \*\*.*?\*\*/,
 			`Default working language: **${targetLanguage}**`
