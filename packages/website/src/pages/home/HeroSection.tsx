@@ -7,22 +7,28 @@ import { AnimatedGradientText } from '../../components/ui/animated-gradient-text
 import { Highlighter } from '../../components/ui/highlighter'
 import { NeonGradientCard } from '../../components/ui/neon-gradient-card'
 import { Particles } from '../../components/ui/particles'
-import {
-	CDN_DEMO_CN_URL,
-	CDN_DEMO_URL,
-	DEMO_API_KEY,
-	DEMO_BASE_URL,
-	DEMO_MODEL,
-} from '../../constants'
+import { CDN_DEMO_CN_URL, CDN_DEMO_URL, DEMO_API_KEY, DEMO_BASE_URL } from '../../constants'
 import { useLanguage } from '../../i18n/context'
 
 let pageAgentModule: Promise<typeof import('page-agent')> | null = null
 
-function getInjection(useCN?: boolean) {
+function getDefaultDemoModel(params: URLSearchParams) {
+	return (
+		params.get('model') ||
+		(import.meta.env.DEV && import.meta.env.LLM_MODEL_NAME ? import.meta.env.LLM_MODEL_NAME : '')
+	)
+}
+
+function getInjection(model: string, useCN?: boolean) {
 	const cdn = useCN ? CDN_DEMO_CN_URL : CDN_DEMO_URL
+	const params = new URLSearchParams({
+		apiKey: DEMO_API_KEY,
+		baseURL: DEMO_BASE_URL,
+		model,
+	}).toString()
 
 	const injection = encodeURI(
-		`javascript:(function(){var s=document.createElement('script');s.src=\`${cdn}?t=\${Math.random()}\`;s.setAttribute('crossorigin', true);s.type="text/javascript";s.onload=()=>console.log('PageAgent script loaded!');document.body.appendChild(s);})();`
+		`javascript:(function(){var s=document.createElement('script');s.src=\`${cdn}?${params}&t=\${Math.random()}\`;s.setAttribute('crossorigin', true);s.type="text/javascript";s.onload=()=>console.log('PageAgent script loaded!');document.body.appendChild(s);})();`
 	)
 
 	return `
@@ -45,13 +51,18 @@ export default function HeroSection() {
 		? '从导航栏中进入文档页，打开"快速开始"相关的文档，帮我总结成 markdown'
 		: 'Goto docs in navigation bar, find Quick-Start section, and summarize in markdown'
 
+	const [params] = useSearchParams()
 	const [task, setTask] = useState(() => defaultTask)
+	const [demoModel, setDemoModel] = useState(() => getDefaultDemoModel(params))
 
 	useEffect(() => {
 		setTask(defaultTask)
 	}, [defaultTask])
 
-	const [params] = useSearchParams()
+	useEffect(() => {
+		setDemoModel(getDefaultDemoModel(params))
+	}, [params])
+
 	const isOther = params.has('try_other')
 
 	const [activeTab, setActiveTab] = useState<'try' | 'other'>(isOther ? 'other' : 'try')
@@ -64,12 +75,29 @@ export default function HeroSection() {
 	}, [])
 
 	const handleExecute = async () => {
-		if (!task.trim() || !ready || !pageAgentModule) return
+		if (!task.trim() || !demoModel.trim() || !ready || !pageAgentModule) return
 
 		const { PageAgent } = await pageAgentModule
 		const win = window as any
+		const selectedModel = demoModel.trim()
+		const selectedBaseURL =
+			import.meta.env.DEV && import.meta.env.LLM_BASE_URL
+				? import.meta.env.LLM_BASE_URL
+				: DEMO_BASE_URL
+		const selectedApiKey =
+			import.meta.env.DEV && import.meta.env.LLM_API_KEY
+				? import.meta.env.LLM_API_KEY
+				: DEMO_API_KEY
 
-		if (!win.pageAgent || win.pageAgent.disposed) {
+		if (
+			!win.pageAgent ||
+			win.pageAgent.disposed ||
+			win.pageAgent.config?.model !== selectedModel ||
+			win.pageAgent.config?.baseURL !== selectedBaseURL ||
+			win.pageAgent.config?.apiKey !== selectedApiKey ||
+			win.pageAgent.config?.language !== language
+		) {
+			win.pageAgent?.dispose?.()
 			win.pageAgent = new (PageAgent as typeof PageAgentType)({
 				interactiveBlacklist: [document.getElementById('root')!],
 				language: language,
@@ -83,18 +111,9 @@ export default function HeroSection() {
 					},
 				},
 
-				model:
-					import.meta.env.DEV && import.meta.env.LLM_MODEL_NAME
-						? import.meta.env.LLM_MODEL_NAME
-						: DEMO_MODEL,
-				baseURL:
-					import.meta.env.DEV && import.meta.env.LLM_BASE_URL
-						? import.meta.env.LLM_BASE_URL
-						: DEMO_BASE_URL,
-				apiKey:
-					import.meta.env.DEV && import.meta.env.LLM_API_KEY
-						? import.meta.env.LLM_API_KEY
-						: DEMO_API_KEY,
+				model: selectedModel,
+				baseURL: selectedBaseURL,
+				apiKey: selectedApiKey,
 			})
 		}
 
@@ -205,6 +224,19 @@ export default function HeroSection() {
 										<div className="space-y-4">
 											<div className="relative">
 												<input
+													value={demoModel}
+													onChange={(e) => setDemoModel(e.target.value)}
+													placeholder={
+														isZh
+															? '输入任意兼容 OpenAI 的模型名称，例如 gpt-5.2'
+															: 'Enter any OpenAI-compatible model, e.g. gpt-5.2'
+													}
+													className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm mb-0"
+													data-page-agent-not-interactive
+												/>
+											</div>
+											<div className="relative">
+												<input
 													value={task}
 													onChange={(e) => setTask(e.target.value)}
 													placeholder={
@@ -217,7 +249,7 @@ export default function HeroSection() {
 												/>
 												<button
 													onClick={handleExecute}
-													disabled={!ready}
+													disabled={!ready || !demoModel.trim()}
 													className="absolute right-2 top-2 px-5 py-1.5 bg-linear-to-r from-blue-600 to-purple-600 text-white font-medium rounded-md hover:shadow-md transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
 													data-page-agent-not-interactive
 												>
@@ -237,9 +269,9 @@ export default function HeroSection() {
 											<p className="text-xs text-gray-500 dark:text-gray-400 text-left">
 												{isZh ? (
 													<>
-														使用免费测试 LLM API，点击执行即表示您同意
+														使用免费测试 LLM API，可填写任意模型名称。点击执行即表示您同意
 														<a
-															href="https://github.com/alibaba/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
+															href="https://github.com/groxaxo/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
 															target="_blank"
 															rel="noopener noreferrer"
 															className="underline"
@@ -249,9 +281,10 @@ export default function HeroSection() {
 													</>
 												) : (
 													<>
-														Powered by free testing LLM API. By clicking Run you agree to the{' '}
+														Powered by the free testing LLM API with any model you choose. By
+														clicking Run you agree to the{' '}
 														<a
-															href="https://github.com/alibaba/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
+															href="https://github.com/groxaxo/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
 															target="_blank"
 															rel="noopener noreferrer"
 															className="underline"
@@ -261,6 +294,11 @@ export default function HeroSection() {
 													</>
 												)}
 											</p>
+											<p className="text-xs text-gray-500 dark:text-gray-400 text-left">
+												{isZh
+													? '项目本身不包含遥测、分析或跟踪代码。'
+													: 'The project itself contains no telemetry, analytics, or tracking code.'}
+											</p>
 										</div>
 									)}
 
@@ -268,6 +306,20 @@ export default function HeroSection() {
 										<div className="grid md:grid-cols-2 gap-6">
 											{/* 左侧：操作步骤 */}
 											<div className="space-y-4">
+												<div className="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+													<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">
+														<span className="font-semibold">{isZh ? '模型:' : 'Model:'}</span>{' '}
+														{isZh
+															? '输入你想注入到书签脚本中的模型名称'
+															: 'Enter the model name to inject into the bookmarklet'}
+													</p>
+													<input
+														value={demoModel}
+														onChange={(e) => setDemoModel(e.target.value)}
+														placeholder={isZh ? '例如 gpt-5.2' : 'For example gpt-5.2'}
+														className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-600 text-sm text-gray-700 dark:text-gray-200"
+													/>
+												</div>
 												<div className="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg">
 													<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">
 														<span className="font-semibold">{isZh ? '步骤 1:' : 'Step 1:'}</span>{' '}
@@ -302,11 +354,17 @@ export default function HeroSection() {
 															<option value="international">jsdelivr CDN</option>
 															<option value="china">npmmirror CDN</option>
 														</select>
-														<div
-															dangerouslySetInnerHTML={{
-																__html: getInjection(cdnSource === 'china'),
-															}}
-														></div>
+														{demoModel.trim() ? (
+															<div
+																dangerouslySetInnerHTML={{
+																	__html: getInjection(demoModel.trim(), cdnSource === 'china'),
+																}}
+															></div>
+														) : (
+															<span className="inline-flex items-center text-xs px-3 py-2 rounded-lg border border-dashed border-gray-300 text-gray-500">
+																{isZh ? '先输入模型名称' : 'Enter a model first'}
+															</span>
+														)}
 													</div>
 												</div>
 
@@ -332,7 +390,7 @@ export default function HeroSection() {
 															<span>
 																使用免费测试 LLM API，使用即表示同意
 																<a
-																	href="https://github.com/alibaba/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
+																	href="https://github.com/groxaxo/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
 																	target="_blank"
 																	rel="noopener noreferrer"
 																	className="text-yellow-700 dark:text-yellow-300 underline"
@@ -344,7 +402,7 @@ export default function HeroSection() {
 															<span>
 																Uses free testing LLM API. By using you agree to the{' '}
 																<a
-																	href="https://github.com/alibaba/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
+																	href="https://github.com/groxaxo/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
 																	target="_blank"
 																	rel="noopener noreferrer"
 																	className="text-yellow-700 dark:text-yellow-300 underline"
@@ -359,6 +417,12 @@ export default function HeroSection() {
 														{isZh
 															? '数据通过中国大陆服务器处理'
 															: 'Data processed via servers in Mainland China'}
+													</li>
+													<li className="flex items-start text-left">
+														<span className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-2 mr-2 shrink-0 "></span>
+														{isZh
+															? '项目本身不包含遥测、分析或跟踪代码'
+															: 'The project itself contains no telemetry, analytics, or tracking code'}
 													</li>
 													<li className="flex items-start text-left">
 														<span className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-2 mr-2 shrink-0 "></span>

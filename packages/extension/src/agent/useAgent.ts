@@ -11,7 +11,7 @@ import type { LLMConfig } from '@page-agent/llms'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { MultiPageAgent } from './MultiPageAgent'
-import { DEMO_CONFIG, migrateLegacyEndpoint } from './constants'
+import { createDefaultLLMConfig, migrateLegacyEndpoint } from './constants'
 
 /** Language preference: undefined means follow system */
 export type LanguagePreference = SupportedLanguage | undefined
@@ -37,6 +37,10 @@ export interface UseAgentResult {
 	configure: (config: ExtConfig) => Promise<void>
 }
 
+function hasCompleteConfig(config: ExtConfig | null): config is ExtConfig {
+	return Boolean(config?.baseURL?.trim() && config.apiKey?.trim() && config.model?.trim())
+}
+
 export function useAgent(): UseAgentResult {
 	const agentRef = useRef<MultiPageAgent | null>(null)
 	const [status, setStatus] = useState<AgentStatus>('idle')
@@ -47,7 +51,7 @@ export function useAgent(): UseAgentResult {
 
 	useEffect(() => {
 		chrome.storage.local.get(['llmConfig', 'language', 'advancedConfig']).then((result) => {
-			let llmConfig = (result.llmConfig as LLMConfig) ?? DEMO_CONFIG
+			let llmConfig = (result.llmConfig as LLMConfig) ?? createDefaultLLMConfig()
 			const language = (result.language as SupportedLanguage) || undefined
 			const advancedConfig = (result.advancedConfig as AdvancedConfig) ?? {}
 
@@ -57,7 +61,7 @@ export function useAgent(): UseAgentResult {
 				llmConfig = migrated
 				chrome.storage.local.set({ llmConfig: migrated })
 			} else if (!result.llmConfig) {
-				chrome.storage.local.set({ llmConfig: DEMO_CONFIG })
+				chrome.storage.local.set({ llmConfig: createDefaultLLMConfig() })
 			}
 
 			setConfig({ ...llmConfig, ...advancedConfig, language })
@@ -65,7 +69,10 @@ export function useAgent(): UseAgentResult {
 	}, [])
 
 	useEffect(() => {
-		if (!config) return
+		if (!hasCompleteConfig(config)) {
+			agentRef.current = null
+			return
+		}
 
 		const { systemInstruction, ...agentConfig } = config
 		const agent = new MultiPageAgent({

@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from 'react'
 import { siGithub } from 'simple-icons'
 
-import { DEMO_API_KEY, DEMO_BASE_URL, DEMO_MODEL, isTestingEndpoint } from '@/agent/constants'
+import { DEMO_API_KEY, DEMO_BASE_URL, isTestingEndpoint } from '@/agent/constants'
 import type { ExtConfig, LanguagePreference } from '@/agent/useAgent'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,9 +25,9 @@ interface ConfigPanelProps {
 }
 
 export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
-	const [apiKey, setApiKey] = useState(config?.apiKey || DEMO_API_KEY)
-	const [baseURL, setBaseURL] = useState(config?.baseURL || DEMO_BASE_URL)
-	const [model, setModel] = useState(config?.model || DEMO_MODEL)
+	const [apiKey, setApiKey] = useState(config?.apiKey ?? DEMO_API_KEY)
+	const [baseURL, setBaseURL] = useState(config?.baseURL ?? DEMO_BASE_URL)
+	const [model, setModel] = useState(config?.model ?? '')
 	const [language, setLanguage] = useState<LanguagePreference>(config?.language)
 	const [maxSteps, setMaxSteps] = useState<number | undefined>(config?.maxSteps)
 	const [systemInstruction, setSystemInstruction] = useState(config?.systemInstruction ?? '')
@@ -42,14 +42,16 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 	const [showApiKey, setShowApiKey] = useState(false)
 
 	useEffect(() => {
-		setApiKey(config?.apiKey || DEMO_API_KEY)
-		setBaseURL(config?.baseURL || DEMO_BASE_URL)
-		setModel(config?.model || DEMO_MODEL)
+		setApiKey(config?.apiKey ?? DEMO_API_KEY)
+		setBaseURL(config?.baseURL ?? DEMO_BASE_URL)
+		setModel(config?.model ?? '')
 		setLanguage(config?.language)
 		setMaxSteps(config?.maxSteps)
 		setSystemInstruction(config?.systemInstruction ?? '')
 		setExperimentalLlmsTxt(config?.experimentalLlmsTxt ?? false)
 	}, [config])
+
+	const canSave = Boolean(baseURL.trim() && apiKey.trim() && model.trim())
 
 	// Poll for user auth token every second until found
 	useEffect(() => {
@@ -169,7 +171,7 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 					<Scale className="size-3 inline-block mr-1 -mt-0.5 text-amber-600" />
 					You are using the free testing API. By using this service you agree to the{' '}
 					<a
-						href="https://github.com/alibaba/page-agent/blob/main/docs/terms-and-privacy.md"
+						href="https://github.com/groxaxo/page-agent/blob/main/docs/terms-and-privacy.md"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="underline hover:text-foreground"
@@ -188,6 +190,9 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 					onChange={(e) => setModel(e.target.value)}
 					className="text-xs h-8"
 				/>
+				<p className="text-[10px] text-muted-foreground">
+					Use any OpenAI-compatible model name supported by your endpoint.
+				</p>
 			</div>
 
 			<div className="flex flex-col gap-1.5">
@@ -276,7 +281,7 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 				</Button>
 				<Button
 					onClick={handleSave}
-					disabled={saving}
+					disabled={saving || !canSave}
 					className="flex-1 h-8 text-xs cursor-pointer"
 				>
 					{saving ? <Loader2 className="size-3 animate-spin" /> : 'Save'}
@@ -287,7 +292,7 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 			<div className="mt-4 mb-4 pt-4 border-t border-border/50 flex gap-2 justify-between text-[10px] text-muted-foreground">
 				<div className="flex flex-col justify-between">
 					<a
-						href="https://github.com/alibaba/page-agent"
+						href="https://github.com/groxaxo/page-agent"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="flex items-center gap-1 hover:text-foreground"
@@ -309,7 +314,7 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 					</a>
 
 					<a
-						href="https://github.com/alibaba/page-agent/blob/main/docs/terms-and-privacy.md"
+						href="https://github.com/groxaxo/page-agent/blob/main/docs/terms-and-privacy.md"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="flex items-center gap-1 hover:text-foreground"
@@ -329,19 +334,32 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 				</div>
 			</div>
 
-			{/* attribute */}
-			<div className="text-[10px] text-muted-foreground bg-background fixed bottom-0 w-full flex justify-around">
-				<span className="leading-loose">
-					Built with ♥️ by{' '}
+			<div className="text-[10px] text-muted-foreground bg-background/95 border-t border-border/50 px-3 py-2 space-y-1">
+				<p>
+					Inspired by{' '}
 					<a
 						href="https://github.com/gaomeng1900"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="underline hover:text-foreground"
 					>
-						@Simon
+						Simon
 					</a>
-				</span>
+					&apos;s original PageAgent ideas and other open-source references.
+				</p>
+				<p>
+					Thanks{' '}
+					<a
+						href="https://github.com/groxaxo"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="underline hover:text-foreground"
+					>
+						groxaxo
+					</a>{' '}
+					for the mindset, polish, and improvements.
+				</p>
+				<p>No telemetry, analytics, or tracking code.</p>
 			</div>
 		</div>
 	)

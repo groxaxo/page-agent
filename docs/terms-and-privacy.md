@@ -65,7 +65,7 @@ are sent to the LLM API endpoint configured in **your settings**.
 
 - **Local storage only**: Your configuration (API endpoint, API key, model selection) is stored in your browser via `chrome.storage.local` (or equivalent browser storage APIs)
 - **No cloud sync**: Configuration is not synced to any external server
-- **No analytics**: The extension does not include any analytics or tracking code
+- **No telemetry**: The extension does not include telemetry, analytics, or tracking code
 
 ### Your Control
 
