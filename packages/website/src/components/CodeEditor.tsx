@@ -1,5 +1,5 @@
 /**
- * 代码编辑器组件，模拟现代代码编辑器的外观
+ * Code editor component that simulates the appearance of a modern code editor.
  */
 import React from 'react'
 
@@ -26,7 +26,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 }) => {
 	const lines = code.split('\n')
 
-	// 使用 Tailwind 的 dark: 前缀实现自动主题切换
+	// Uses Tailwind dark: prefix for automatic theme switching
 	const containerClasses =
 		'bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-gray-300 dark:border-gray-700'
 	const headerClasses = 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700'
@@ -44,11 +44,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 		<div
 			className={`group relative ${containerClasses} rounded-xl border shadow-2xl my-4 overflow-hidden ${className}`}
 		>
-			{/* 编辑器顶部栏 */}
+			{/* Editor top bar */}
 			{showHeader && (
 				<div className={`flex items-center justify-between px-4 py-3 ${headerClasses} border-b`}>
 					<div className="flex items-center space-x-3">
-						{/* 窗口控制按钮 */}
+						{/* Window control buttons */}
 						<div className="flex space-x-2">
 							<div className="w-3 h-3 bg-red-500 rounded-full"></div>
 							<div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
@@ -67,10 +67,10 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 				</div>
 			)}
 
-			{/* 代码内容区域 */}
+			{/* Code content area */}
 			<div className="relative">
 				<div className="flex">
-					{/* 行号 */}
+					{/* Line numbers */}
 					{showLineNumbers && (
 						<div className={`shrink-0 px-4 py-4 ${lineNumbersClasses} border-r select-none`}>
 							<div className="text-xs font-mono leading-6">
@@ -86,7 +86,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 						</div>
 					)}
 
-					{/* 代码内容 */}
+					{/* Code content */}
 					<div className={`flex-1 px-4 py-4 ${codeAreaClasses} overflow-x-auto`}>
 						<div className="text-sm font-mono leading-6">
 							<HighlightSyntax code={code} />
@@ -94,13 +94,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 					</div>
 				</div>
 
-				{/* 复制按钮 */}
+				{/* Copy button */}
 				<button
 					onClick={() => {
 						navigator.clipboard.writeText(code).catch(console.error)
 					}}
 					className={`absolute top-3 right-3 p-2 ${copyButtonClasses} rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100`}
-					title="复制代码"
+					title="Copy code"
 				>
 					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -113,7 +113,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 				</button>
 			</div>
 
-			{/* 底部状态栏 */}
+			{/* Bottom status bar */}
 			{showFooter && (
 				<div className={`px-4 py-2 ${footerClasses} border-t`}>
 					<div className="flex items-center justify-between text-xs">

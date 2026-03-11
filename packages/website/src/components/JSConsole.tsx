@@ -1,5 +1,5 @@
 /**
- * JS 调试台，适合在文档中直接让用户运行代码，并且实时查看运行结果
+ * JavaScript debug console, suitable for letting users run code directly in docs and view results in real time.
  */
 /* eslint-disable @typescript-eslint/no-base-to-string */
 import { KeyboardEvent, useEffect, useImperativeHandle, useRef, useState } from 'react'
@@ -8,7 +8,7 @@ import HighlightSyntax from './HighlightSyntax'
 
 import styles from './JSConsole.module.css'
 
-// 全局console拦截管理器
+// Global console interceptor manager
 class ConsoleInterceptor {
 	private static instance: ConsoleInterceptor
 	private subscribers = new Set<(type: string, args: unknown[]) => void>()
@@ -118,10 +118,10 @@ function JSConsole({
 	const inputRef = useRef<HTMLTextAreaElement>(null)
 	const outputRef = useRef<HTMLDivElement>(null)
 
-	// 持久的执行上下文，用于多轮对话共享作用域
+	// Persistent execution context — shared scope across multiple executions
 	const executionContextRef = useRef<Record<string, unknown>>({})
 
-	// 格式化结果
+	// Format result value for display
 	const formatResult = (value: unknown): string => {
 		if (value === null) return 'null'
 		if (value === undefined) return 'undefined'
@@ -137,7 +137,7 @@ function JSConsole({
 		return String(value)
 	}
 
-	// 全局console拦截处理
+	// Global console interception handler
 	useEffect(() => {
 		const interceptor = ConsoleInterceptor.getInstance()
 
@@ -152,7 +152,7 @@ function JSConsole({
 
 			setOutputs((prev) => [...prev, outputItem])
 
-			// 自动滚动到底部
+			// Auto-scroll to bottom
 			setTimeout(() => {
 				if (outputRef.current) {
 					outputRef.current.scrollTop = outputRef.current.scrollHeight
@@ -167,13 +167,13 @@ function JSConsole({
 		}
 	}, [])
 
-	// 执行代码
+	// Execute code
 	const executeCode = async (code: string): Promise<unknown> => {
 		if (!code.trim()) return
 
 		setIsExecuting(true)
 
-		// 添加输入到输出
+		// Add input to output list
 		const inputItem: OutputItem = {
 			type: 'input',
 			content: code,
@@ -183,15 +183,15 @@ function JSConsole({
 		setOutputs((prev) => [...prev, inputItem])
 
 		try {
-			// 创建异步函数以支持 await
+			// Create async function to support await
 			const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
-			// 合并外部上下文和持久执行上下文
+			// Merge external context with persistent execution context
 			const allContext = { ...context, ...executionContextRef.current }
 			const contextKeys = Object.keys(allContext)
 			const contextValues = Object.values(allContext)
 
-			// 注入 console.log 重定向
+			// Inject console.log redirect
 			const logs: string[] = []
 			const mockConsole = {
 				log: (...args: unknown[]) => {
@@ -205,7 +205,7 @@ function JSConsole({
 				},
 			}
 
-			// 检测代码是否是表达式还是语句
+			// Detect whether the code is an expression or a statement
 			const trimmedCode = code.trim()
 			const isExpression =
 				!trimmedCode.includes(';') &&
@@ -221,7 +221,7 @@ function JSConsole({
 				!trimmedCode.startsWith('{') &&
 				!trimmedCode.includes('\n')
 
-			// 如果是表达式，自动添加 return
+			// If it's an expression, automatically prepend return
 			const codeToExecute = isExpression ? `return ${code}` : code
 
 			const wrappedCode = `
@@ -230,11 +230,11 @@ function JSConsole({
 					})();
 				`
 
-			// 执行代码
+			// Execute code
 			const func = new AsyncFunction('console', ...contextKeys, wrappedCode)
 			const result = await func(mockConsole, ...contextValues)
 
-			// 添加 console.log 输出
+			// Add console.log output
 			if (logs.length > 0) {
 				const logItem: OutputItem = {
 					type: 'log',
@@ -244,7 +244,7 @@ function JSConsole({
 				setOutputs((prev) => [...prev, logItem])
 			}
 
-			// 总是添加执行结果输出（包括 undefined）
+			// Always add execution result (including undefined)
 			const outputItem: OutputItem = {
 				type: 'output',
 				content: formatResult(result),
@@ -264,7 +264,7 @@ function JSConsole({
 			throw error
 		} finally {
 			setIsExecuting(false)
-			// 滚动到底部
+			// Scroll to bottom
 			setTimeout(() => {
 				if (outputRef.current) {
 					outputRef.current.scrollTop = outputRef.current.scrollHeight
@@ -273,14 +273,14 @@ function JSConsole({
 		}
 	}
 
-	// 清空控制台
+	// Clear the console
 	const clear = () => {
 		setOutputs([])
-		// 同时清空执行上下文
+		// Also reset the execution context
 		executionContextRef.current = {}
 	}
 
-	// 添加输出
+	// Append output
 	const appendOutput = (content: string) => {
 		const outputItem: OutputItem = {
 			type: 'output',
@@ -290,21 +290,21 @@ function JSConsole({
 		setOutputs((prev) => [...prev, outputItem])
 	}
 
-	// 暴露方法给父组件
+	// Expose methods to parent component
 	useImperativeHandle(ref, () => ({
 		executeCode,
 		clear,
 		appendOutput,
 	}))
 
-	// 处理键盘事件
+	// Handle keyboard events
 	const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === 'Enter') {
 			if (e.shiftKey) {
-				// Shift+Enter 换行
+				// Shift+Enter: insert newline
 				return
 			} else {
-				// Enter 执行
+				// Enter: execute
 				e.preventDefault()
 				if (!isExecuting && input.trim()) {
 					executeCode(input)
@@ -327,7 +327,7 @@ function JSConsole({
 
 	return (
 		<div className={styles.console} style={{ height }}>
-			{/* 历史记录和输入区域 */}
+			{/* History and input area */}
 			<div className={styles.historyArea} ref={outputRef}>
 				{outputs.map((item) => (
 					<div key={item.timestamp} className={`${styles.historyItem} ${styles[item.type]}`}>
@@ -345,7 +345,7 @@ function JSConsole({
 				)}
 			</div>
 
-			{/* 当前输入行 */}
+			{/* Current input line */}
 			<div className={styles.inputArea}>
 				<span className={styles.prompt}>{'> '}</span>
 				<textarea

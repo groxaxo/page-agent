@@ -31,7 +31,7 @@ export interface DomConfig {
 }
 
 /**
- * 用于检测可交互元素是否是新出现的。
+ * Used to detect whether an interactive element has newly appeared.
  */
 const newElementsCache = new WeakMap<HTMLElement, string>()
 
@@ -70,16 +70,16 @@ export function getFlatTree(config: DomConfig): FlatDomTree {
 	const currentUrl = window.location.href
 
 	/**
-	 * 标记新出现的元素
-	 * @todo browser-use 使用 hash(位置，属性等信息) 来判断是否同一个元素，
-	 *       能够解决 1. 元素被删除后重新添加 2. 页面卸载 等问题。
-	 *       这里先简单做.
+	 * Mark newly appeared elements.
+	 * @todo browser-use uses hash(position, attributes, etc.) to determine if an element is the same one,
+	 *       which can handle: 1. element removed and re-added 2. page unload, etc.
+	 *       Keeping it simple for now.
 	 */
 	for (const nodeId in elements.map) {
 		const node = elements.map[nodeId]
 		if (node.isInteractive && node.ref) {
 			const ref = node.ref as HTMLElement
-			// @note 这样太严格，元素是可以跨页面存在的
+			// @note too strict — elements can persist across page navigations
 			// if (newElementsCache.get(ref) !== currentUrl) {
 			if (!newElementsCache.has(ref)) {
 				newElementsCache.set(ref, currentUrl)
@@ -129,7 +129,7 @@ function matchAttributes(
 }
 
 /**
- * elementsToString 内部使用的类型
+ * Internal type used by elementsToString
  */
 interface TreeNode {
 	type: 'text' | 'element'
@@ -149,27 +149,27 @@ interface TreeNode {
 }
 
 /**
- * 对应 python 中的 views::clickable_elements_to_string,
- * 将 dom 信息处理成适合 llm 阅读的文本格式
- * @形如
+ * Equivalent to python views::clickable_elements_to_string.
+ * Converts DOM information into a text format suitable for LLM consumption.
+ * @example
  * ``` text
- * [0]<a aria-label=page-agent.js 首页 />
+ * [0]<a aria-label=page-agent.js home />
  * [1]<div >P />
  * [2]<div >page-agent.js
  * UI Agent in your webpage />
- * [3]<a >文档 />
- * [4]<a aria-label=查看源码（在新窗口打开）>源码 />
+ * [3]<a >Docs />
+ * [4]<a aria-label=View source (opens in new window)>Source />
  * UI Agent in your webpage
- * 用户输入需求，AI 理解页面并自动操作。
- * [5]<a role=button>快速开始 />
- * [6]<a role=button>查看文档 />
- * 无需后端
+ * User inputs a task, AI understands the page and operates automatically.
+ * [5]<a role=button>Quick start />
+ * [6]<a role=button>View docs />
+ * No backend needed
  * ```
- * 其中可交互元素用序号标出，提示llm可以用序号操作。
- * 缩进代表父子关系。
- * 普通文本则直接列出来。
+ * Interactive elements are labelled with an index so the LLM can reference them by number.
+ * Indentation represents parent-child relationships.
+ * Plain text nodes are listed as-is.
  *
- * @todo 数据脱敏过滤器
+ * @todo data masking filter
  */
 export function flatTreeToString(flatTree: FlatDomTree, includeAttributes?: string[]): string {
 	const DEFAULT_INCLUDE_ATTRIBUTES = [
@@ -360,7 +360,7 @@ export function flatTreeToString(flatTree: FlatDomTree, includeAttributes?: stri
 				}
 
 				/**
-				 * @edit scrollable 数据
+				 * @edit scrollable data
 				 */
 				if (node.extra) {
 					if (node.extra.scrollable) {
@@ -491,7 +491,7 @@ export function cleanUpHighlights() {
 	;(window as any)._highlightCleanupFunctions = []
 }
 
-// 监听 URL 的任何变化，立刻清空 highLights
+// Listen for any URL changes and immediately clear highlights
 window.addEventListener('popstate', () => {
 	// console.log('URL changed (popstate), highlights cleaned up.')
 	cleanUpHighlights()
@@ -512,7 +512,7 @@ if (navigation && typeof navigation.addEventListener === 'function') {
 		cleanUpHighlights()
 	})
 } else {
-	// 定时器
+	// Polling fallback
 	let currentUrl = window.location.href
 	setInterval(() => {
 		if (window.location.href !== currentUrl) {

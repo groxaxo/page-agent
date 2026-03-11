@@ -4,20 +4,20 @@ type Theme = 'light' | 'dark'
 
 export default function ThemeSwitcher() {
 	const [theme, setTheme] = useState<Theme>(() => {
-		// 初始化时读取保存的主题
+		// Read saved theme on initialization
 		if (typeof window !== 'undefined') {
 			const savedTheme = localStorage.getItem('theme') as Theme | null
 			if (savedTheme === 'light' || savedTheme === 'dark') {
 				return savedTheme
 			}
-			// 默认跟随系统
+			// Default to system preference
 			return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 		}
 		return 'light'
 	})
 
 	useEffect(() => {
-		// 应用主题
+		// Apply theme
 		if (theme === 'dark') {
 			document.documentElement.classList.add('dark')
 			document.documentElement.style.colorScheme = 'dark'
@@ -25,16 +25,16 @@ export default function ThemeSwitcher() {
 			document.documentElement.classList.remove('dark')
 			document.documentElement.style.colorScheme = 'light'
 		}
-		// 保存到 localStorage
+		// Persist to localStorage
 		localStorage.setItem('theme', theme)
 	}, [theme])
 
-	// 监听系统主题变化
+	// Listen for system theme changes
 	useEffect(() => {
 		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
 		const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-			// 只有在用户未手动设置时才自动跟随系统
+			// Only follow system if the user has not manually set a theme
 			const savedTheme = localStorage.getItem('theme')
 			if (!savedTheme) {
 				setTheme(e.matches ? 'dark' : 'light')
@@ -60,7 +60,7 @@ export default function ThemeSwitcher() {
 			role="switch"
 			aria-checked={theme === 'dark'}
 		>
-			{/* 滑块 */}
+			{/* Toggle knob */}
 			<span
 				className="inline-block h-6 w-6 transform rounded-full transition-all duration-300 ease-in-out shadow-md"
 				style={{
@@ -68,10 +68,10 @@ export default function ThemeSwitcher() {
 					transform: theme === 'dark' ? 'translateX(2.25rem)' : 'translateX(0.25rem)',
 				}}
 			>
-				{/* 图标 */}
+				{/* Icon */}
 				<span className="flex items-center justify-center h-full w-full">
 					{theme === 'light' ? (
-						// 太阳图标
+						// Sun icon
 						<svg
 							className="w-4 h-4 text-white"
 							fill="currentColor"
@@ -85,7 +85,7 @@ export default function ThemeSwitcher() {
 							/>
 						</svg>
 					) : (
-						// 月亮图标
+						// Moon icon
 						<svg
 							className="w-4 h-4 text-slate-200"
 							fill="currentColor"
@@ -98,12 +98,12 @@ export default function ThemeSwitcher() {
 				</span>
 			</span>
 
-			{/* 背景装饰 */}
+			{/* Background decoration */}
 			<span
 				className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none"
 				aria-hidden="true"
 			>
-				{/* 左侧太阳（浅色模式时显示） */}
+				{/* Left sun (shown in dark mode) */}
 				<span
 					className={`transition-opacity duration-300 ${
 						theme === 'light' ? 'opacity-0' : 'opacity-40'
@@ -117,7 +117,7 @@ export default function ThemeSwitcher() {
 						/>
 					</svg>
 				</span>
-				{/* 右侧月亮（深色模式时显示） */}
+				{/* Right moon (shown in light mode) */}
 				<span
 					className={`transition-opacity duration-300 ${
 						theme === 'dark' ? 'opacity-0' : 'opacity-40'
