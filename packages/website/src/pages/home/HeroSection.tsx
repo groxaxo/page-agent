@@ -12,6 +12,13 @@ import { useLanguage } from '../../i18n/context'
 
 let pageAgentModule: Promise<typeof import('page-agent')> | null = null
 
+function getDefaultDemoModel(params: URLSearchParams) {
+	return (
+		params.get('model') ||
+		(import.meta.env.DEV && import.meta.env.LLM_MODEL_NAME ? import.meta.env.LLM_MODEL_NAME : '')
+	)
+}
+
 function getInjection(model: string, useCN?: boolean) {
 	const cdn = useCN ? CDN_DEMO_CN_URL : CDN_DEMO_URL
 	const params = new URLSearchParams({
@@ -46,23 +53,14 @@ export default function HeroSection() {
 
 	const [params] = useSearchParams()
 	const [task, setTask] = useState(() => defaultTask)
-	const [demoModel, setDemoModel] = useState(
-		() =>
-			params.get('model') ||
-			(import.meta.env.DEV && import.meta.env.LLM_MODEL_NAME ? import.meta.env.LLM_MODEL_NAME : '')
-	)
+	const [demoModel, setDemoModel] = useState(() => getDefaultDemoModel(params))
 
 	useEffect(() => {
 		setTask(defaultTask)
 	}, [defaultTask])
 
 	useEffect(() => {
-		setDemoModel(
-			params.get('model') ||
-				(import.meta.env.DEV && import.meta.env.LLM_MODEL_NAME
-					? import.meta.env.LLM_MODEL_NAME
-					: '')
-		)
+		setDemoModel(getDefaultDemoModel(params))
 	}, [params])
 
 	const isOther = params.has('try_other')
@@ -82,8 +80,23 @@ export default function HeroSection() {
 		const { PageAgent } = await pageAgentModule
 		const win = window as any
 		const selectedModel = demoModel.trim()
+		const selectedBaseURL =
+			import.meta.env.DEV && import.meta.env.LLM_BASE_URL
+				? import.meta.env.LLM_BASE_URL
+				: DEMO_BASE_URL
+		const selectedApiKey =
+			import.meta.env.DEV && import.meta.env.LLM_API_KEY
+				? import.meta.env.LLM_API_KEY
+				: DEMO_API_KEY
 
-		if (!win.pageAgent || win.pageAgent.disposed || win.pageAgent.config?.model !== selectedModel) {
+		if (
+			!win.pageAgent ||
+			win.pageAgent.disposed ||
+			win.pageAgent.config?.model !== selectedModel ||
+			win.pageAgent.config?.baseURL !== selectedBaseURL ||
+			win.pageAgent.config?.apiKey !== selectedApiKey ||
+			win.pageAgent.config?.language !== language
+		) {
 			win.pageAgent?.dispose?.()
 			win.pageAgent = new (PageAgent as typeof PageAgentType)({
 				interactiveBlacklist: [document.getElementById('root')!],
@@ -99,14 +112,8 @@ export default function HeroSection() {
 				},
 
 				model: selectedModel,
-				baseURL:
-					import.meta.env.DEV && import.meta.env.LLM_BASE_URL
-						? import.meta.env.LLM_BASE_URL
-						: DEMO_BASE_URL,
-				apiKey:
-					import.meta.env.DEV && import.meta.env.LLM_API_KEY
-						? import.meta.env.LLM_API_KEY
-						: DEMO_API_KEY,
+				baseURL: selectedBaseURL,
+				apiKey: selectedApiKey,
 			})
 		}
 
@@ -347,13 +354,17 @@ export default function HeroSection() {
 															<option value="international">jsdelivr CDN</option>
 															<option value="china">npmmirror CDN</option>
 														</select>
-														<div
-															dangerouslySetInnerHTML={{
-																__html: demoModel.trim()
-																	? getInjection(demoModel.trim(), cdnSource === 'china')
-																	: `<span class="inline-flex items-center text-xs px-3 py-2 rounded-lg border border-dashed border-gray-300 text-gray-500">${isZh ? '先输入模型名称' : 'Enter a model first'}</span>`,
-															}}
-														></div>
+														{demoModel.trim() ? (
+															<div
+																dangerouslySetInnerHTML={{
+																	__html: getInjection(demoModel.trim(), cdnSource === 'china'),
+																}}
+															></div>
+														) : (
+															<span className="inline-flex items-center text-xs px-3 py-2 rounded-lg border border-dashed border-gray-300 text-gray-500">
+																{isZh ? '先输入模型名称' : 'Enter a model first'}
+															</span>
+														)}
 													</div>
 												</div>
 

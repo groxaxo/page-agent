@@ -24,17 +24,17 @@ setTimeout(() => {
 	if (currentScript) {
 		console.log('🚀 page-agent.js detected current script:', currentScript.src)
 		const url = new URL(currentScript.src)
-		const model = url.searchParams.get('model') || import.meta.env.LLM_MODEL_NAME || ''
-		const baseURL = url.searchParams.get('baseURL') || import.meta.env.LLM_BASE_URL || DEMO_BASE_URL
-		const apiKey = url.searchParams.get('apiKey') || import.meta.env.LLM_API_KEY || DEMO_API_KEY
+		const model = url.searchParams.get('model') ?? import.meta.env.LLM_MODEL_NAME ?? ''
+		const baseURL = url.searchParams.get('baseURL') ?? import.meta.env.LLM_BASE_URL ?? DEMO_BASE_URL
+		const apiKey = url.searchParams.get('apiKey') ?? import.meta.env.LLM_API_KEY ?? DEMO_API_KEY
 		const language = (url.searchParams.get('lang') as 'zh-CN' | 'en-US') || 'zh-CN'
 		config = { model, baseURL, apiKey, language }
 	} else {
 		console.log('🚀 page-agent.js no current script detected, using default demo config')
 		config = {
-			model: import.meta.env.LLM_MODEL_NAME || '',
-			baseURL: import.meta.env.LLM_BASE_URL || DEMO_BASE_URL,
-			apiKey: import.meta.env.LLM_API_KEY || DEMO_API_KEY,
+			model: import.meta.env.LLM_MODEL_NAME ?? '',
+			baseURL: import.meta.env.LLM_BASE_URL ?? DEMO_BASE_URL,
+			apiKey: import.meta.env.LLM_API_KEY ?? DEMO_API_KEY,
 		}
 	}
 
