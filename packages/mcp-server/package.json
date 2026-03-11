@@ -1,0 +1,40 @@
+{
+    "name": "@page-agent/mcp-server",
+    "version": "1.5.5",
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "bin": {
+        "page-agent-mcp-server": "./dist/index.js"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist/"
+    ],
+    "description": "Local MCP server for Page Agent, backed by the browser extension runtime",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/alibaba/page-agent.git",
+        "directory": "packages/mcp-server"
+    },
+    "scripts": {
+        "build": "vite build",
+        "dev": "node --experimental-strip-types ./src/index.ts",
+        "prepublishOnly": "node -e \"const fs=require('fs');['README.md','LICENSE'].forEach(f=>fs.copyFileSync('../../'+f,f))\"",
+        "postpublish": "node -e \"['README.md','LICENSE'].forEach(f=>{try{require('fs').unlinkSync(f)}catch{}})\""
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.27.1",
+        "@page-agent/browser-bridge": "1.5.5",
+        "@page-agent/core": "1.5.5",
+        "zod": "^4.3.6"
+    }
+}

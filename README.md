@@ -29,6 +29,7 @@ The GUI Agent Living in Your Webpage. Control web interfaces with natural langua
 - **🧠 Bring your own LLMs**
 - **🎨 Pretty UI with human-in-the-loop**
 - **🐙 Optional [chrome extension](https://alibaba.github.io/page-agent/docs/features/chrome-extension) for multi-page tasks.**
+- **🧩 Local MCP server for Codex, OpenCode, Claude Code, and other MCP clients.**
 
 ## 💡 Use Cases
 
@@ -74,6 +75,45 @@ await agent.execute('Click the login button')
 ```
 
 For more programmatic usage, see [📖 Documentations](https://alibaba.github.io/page-agent/docs/introduction/overview).
+
+## 🔌 Local MCP Server
+
+Page Agent now ships with a local STDIO MCP server in `packages/mcp-server/`. It keeps DOM inspection and execution inside the browser extension runtime while exposing deterministic browser tools through MCP.
+
+### What you need
+
+1. Build the workspaces:
+
+```bash
+npm install
+npm run build:libs
+```
+
+2. Load the extension from `packages/extension/.output/chrome-mv3/` (or run `npm run build:ext -w @page-agent/ext` first).
+3. Start the MCP server:
+
+```bash
+node /absolute/path/to/page-agent/packages/mcp-server/dist/index.js
+```
+
+The extension bridge uses `http://127.0.0.1:37173` by default, so no extra configuration is required for local development.
+
+### Available MCP tools
+
+- `page_agent_list_sessions`
+- `page_agent_open_url`
+- `page_agent_switch_session`
+- `page_agent_get_browser_state`
+- `page_agent_update_tree`
+- `page_agent_click_element`
+- `page_agent_input_text`
+- `page_agent_select_option`
+- `page_agent_scroll`
+- `page_agent_scroll_horizontally`
+- `page_agent_execute_javascript` (disabled unless `PAGE_AGENT_ALLOW_SCRIPT_EXECUTION=true`)
+- `page_agent_run_task` (requires LLM env vars or explicit `llm` arguments)
+
+See `/packages/mcp-server/README.md` and `/examples/mcp/` for setup examples for Claude Code, Codex, and OpenCode.
 
 ## 🤝 Contributing
 

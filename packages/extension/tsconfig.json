@@ -12,6 +12,7 @@
             // Self root
             "@/*": ["src/*"],
 
+            "@page-agent/browser-bridge": ["../browser-bridge/src/index.ts"],
             "@page-agent/llms": ["../llms/src/index.ts"],
             "@page-agent/page-controller": ["../page-controller/src/PageController.ts"],
             "@page-agent/core": ["../core/src/PageAgentCore.ts"],
@@ -20,6 +21,7 @@
     },
     "references": [
         //
+        { "path": "../browser-bridge" },
         { "path": "../llms" },
         { "path": "../page-controller" },
         { "path": "../core" },
