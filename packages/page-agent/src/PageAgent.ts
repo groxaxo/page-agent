@@ -7,6 +7,7 @@ import { PageController, type PageControllerConfig } from '@page-agent/page-cont
 import { Panel } from '@page-agent/ui'
 
 export * from '@page-agent/core'
+export * from './providerDiscovery'
 
 export type PageAgentConfig = AgentConfig & PageControllerConfig
 

@@ -3,6 +3,9 @@ import { Heading } from '@/components/Heading'
 import { CDN_DEMO_CN_URL, CDN_DEMO_URL } from '@/constants'
 import { useLanguage } from '@/i18n/context'
 
+const TERMS_URL =
+	'https://github.com/groxaxo/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use'
+
 export default function QuickStart() {
 	const { isZh } = useLanguage()
 
@@ -13,6 +16,22 @@ export default function QuickStart() {
 			<p className=" mb-6 leading-relaxed">
 				{isZh ? '几分钟内完成 page-agent 的集成。' : 'Integrate page-agent in minutes.'}
 			</p>
+
+			<div className="mb-6 rounded-xl border border-fuchsia-200/70 bg-linear-to-r from-fuchsia-50 to-cyan-50 p-4 text-sm text-gray-700 dark:border-fuchsia-900/60 dark:from-fuchsia-950/20 dark:to-cyan-950/20 dark:text-gray-200">
+				{isZh ? (
+					<>
+						本文档覆盖的是 <strong>groxaxo/page-agent</strong> 这个原创分叉版本；感谢 Simon 与原始
+						Alibaba PageAgent 项目的启发，同时这里展示的是带有前台安装器与本地模型自动发现能力的
+						fork。
+					</>
+				) : (
+					<>
+						This documentation covers <strong>groxaxo/page-agent</strong>, an original fork inspired
+						by Simon and the original Alibaba PageAgent project, while clearly documenting the
+						fork-specific installer and local model autodetection flow.
+					</>
+				)}
+			</div>
 
 			<Heading id="installation-steps" className="text-2xl font-bold mb-3">
 				{isZh ? '安装步骤' : 'Installation Steps'}
@@ -31,7 +50,7 @@ export default function QuickStart() {
 								<>
 									该 Demo CDN 使用了免费的测试 LLM API，使用即表示您同意其
 									<a
-										href="https://github.com/alibaba/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
+										href={TERMS_URL}
 										target="_blank"
 										rel="noopener noreferrer"
 										className="underline"
@@ -43,7 +62,7 @@ export default function QuickStart() {
 								<>
 									This demo CDN uses our free testing LLM API. By using it you agree to the{' '}
 									<a
-										href="https://github.com/alibaba/page-agent/blob/main/docs/terms-and-privacy.md#2-testing-api-and-demo-disclaimer--terms-of-use"
+										href={TERMS_URL}
 										target="_blank"
 										rel="noopener noreferrer"
 										className="underline"
@@ -102,6 +121,31 @@ import { PageAgent } from 'page-agent'`}
   model: 'qwen3.5-plus',
   baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
   apiKey: 'YOUR_API_KEY',
+  language: '${isZh ? 'zh-CN' : 'en-US'}'
+})`}
+						language="javascript"
+					/>
+				</div>
+
+				<div className="p-4 bg-fuchsia-50 dark:bg-fuchsia-900/20 rounded-lg">
+					<h3 className="text-lg font-semibold mb-2 text-fuchsia-900 dark:text-fuchsia-300">
+						{isZh ? '🤖 自动发现本地模型（新）' : '🤖 Autodetect Local Models (New)'}
+					</h3>
+					<p className="mb-3 text-sm text-gray-700 dark:text-gray-300">
+						{isZh
+							? '如果你的电脑上已经运行了 Ollama、LM Studio 或 vLLM，可以让 page-agent 自动扫描 /v1/models 并直接使用发现到的模型。'
+							: 'If Ollama, LM Studio, or vLLM is already running on your machine, page-agent can scan /v1/models automatically and use the first detected model directly.'}
+					</p>
+					<CodeEditor
+						code={`import { PageAgent, discoverAvailableModelProviders, pickBestDetectedProvider } from 'page-agent'
+
+const detected = pickBestDetectedProvider(await discoverAvailableModelProviders())
+if (!detected) throw new Error('${isZh ? '请先启动本地模型服务。' : 'Start a local model runtime first.'}')
+
+const agent = new PageAgent({
+  model: detected.defaultModel,
+  baseURL: detected.baseURL,
+  apiKey: detected.apiKey,
   language: '${isZh ? 'zh-CN' : 'en-US'}'
 })`}
 						language="javascript"
