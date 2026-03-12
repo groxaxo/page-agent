@@ -17,6 +17,19 @@ console.log('🚀 page-agent.js loaded!')
 const DEMO_BASE_URL = 'https://page-ag-testing-ohftxirgbn.cn-shanghai.fcapp.run'
 const DEMO_API_KEY = 'NA'
 
+async function applyAutoDetectedProvider(config: PageAgentConfig): Promise<void> {
+	if (config.model && config.baseURL) return
+
+	const detectedProvider = pickBestDetectedProvider(await discoverAvailableModelProviders())
+	if (!detectedProvider) return
+
+	config.model ||= detectedProvider.defaultModel
+	config.baseURL ||= detectedProvider.baseURL
+	config.apiKey ||= detectedProvider.apiKey
+
+	console.log('🚀 page-agent.js autodetected local provider:', detectedProvider)
+}
+
 // in case document.x is not ready yet
 setTimeout(async () => {
 	const currentScript = document.currentScript as HTMLScriptElement | null
@@ -33,13 +46,7 @@ setTimeout(async () => {
 		config = { model, baseURL, apiKey, language }
 
 		if (shouldAutoDetect && (!config.model || !config.baseURL)) {
-			const detectedProvider = pickBestDetectedProvider(await discoverAvailableModelProviders())
-			if (detectedProvider) {
-				config.model ||= detectedProvider.defaultModel
-				config.baseURL ||= detectedProvider.baseURL
-				config.apiKey ||= detectedProvider.apiKey
-				console.log('🚀 page-agent.js autodetected local provider:', detectedProvider)
-			}
+			await applyAutoDetectedProvider(config)
 		}
 	} else {
 		console.log('🚀 page-agent.js no current script detected, using default demo config')
@@ -50,13 +57,7 @@ setTimeout(async () => {
 		}
 
 		if (!config.model || !config.baseURL) {
-			const detectedProvider = pickBestDetectedProvider(await discoverAvailableModelProviders())
-			if (detectedProvider) {
-				config.model ||= detectedProvider.defaultModel
-				config.baseURL ||= detectedProvider.baseURL
-				config.apiKey ||= detectedProvider.apiKey
-				console.log('🚀 page-agent.js autodetected local provider:', detectedProvider)
-			}
+			await applyAutoDetectedProvider(config)
 		}
 	}
 

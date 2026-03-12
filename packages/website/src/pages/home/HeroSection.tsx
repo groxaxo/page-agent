@@ -116,9 +116,11 @@ export default function HeroSection() {
 
 			const preferredProvider = module.pickBestDetectedProvider(providers)
 			if (preferredProvider) {
-				setSelectedProviderBaseURL((currentBaseURL) => currentBaseURL || preferredProvider.baseURL)
+				setSelectedProviderBaseURL(
+					(existingBaseURL) => existingBaseURL || preferredProvider.baseURL
+				)
 				setDemoModel(
-					(currentModel: string) => currentModel.trim() || preferredProvider.defaultModel
+					(existingModel: string) => existingModel.trim() || preferredProvider.defaultModel
 				)
 				setDiscoveryState('ready')
 				return
@@ -358,7 +360,7 @@ agent.panel.show()`
 							: ', turns your website into an AI-native app.'}
 						<br />
 						{isZh
-							? '用户/答疑机器人给出文字指示，AI 帮你操作页面。现在还能自动扫描本机的 Ollama、LM Studio 与 vLLM 模型。'
+							? '用户或客服机器人给出文字指示，AI 帮你操作页面。现在还能自动扫描本机的 Ollama、LM Studio 与 vLLM 模型。'
 							: 'Users give natural language commands, AI handles the rest. Now it can also scan your machine for Ollama, LM Studio, and vLLM models automatically.'}
 					</p>
 

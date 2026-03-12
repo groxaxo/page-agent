@@ -126,6 +126,7 @@ export const KNOWN_MODEL_PROVIDERS: KnownModelProvider[] = [
 ]
 
 const LOCAL_MODEL_PROVIDERS = KNOWN_MODEL_PROVIDERS.filter((provider) => provider.isLocal)
+const PROVIDER_BY_ID = new Map(KNOWN_MODEL_PROVIDERS.map((provider) => [provider.id, provider]))
 
 const MODEL_HINT_PRIORITY = [
 	'qwen',
@@ -179,9 +180,9 @@ async function fetchModels(
 		if (!response.ok) return []
 
 		const body = (await response.json()) as { data?: { id?: string | null }[] }
-		const modelIds = body.data?.map((item) => item.id?.trim()).filter(Boolean) as
-			| string[]
-			| undefined
+		const modelIds = body.data
+			?.map((item) => item.id?.trim())
+			.filter((modelId): modelId is string => Boolean(modelId))
 		return sortModels(modelIds ?? [])
 	} catch {
 		return []
@@ -221,28 +222,37 @@ export function pickBestDetectedProvider(
 }
 
 export function detectProviderFromUrl(baseURL: string): KnownModelProvider | null {
-	const normalizedURL = baseURL.toLowerCase()
+	let parsedURL: URL | null = null
 
-	if (normalizedURL.includes('api.openai.com')) return KNOWN_MODEL_PROVIDERS[0]
-	if (normalizedURL.includes('api.anthropic.com')) return KNOWN_MODEL_PROVIDERS[1]
-	if (normalizedURL.includes('generativelanguage.googleapis.com')) return KNOWN_MODEL_PROVIDERS[2]
-	if (normalizedURL.includes('openrouter.ai')) return KNOWN_MODEL_PROVIDERS[3]
-	if (normalizedURL.includes('api.fireworks.ai')) return KNOWN_MODEL_PROVIDERS[4]
-	if (normalizedURL.includes('api.deepseek.com')) return KNOWN_MODEL_PROVIDERS[5]
-	if (normalizedURL.includes('api.x.ai')) return KNOWN_MODEL_PROVIDERS[6]
-	if (normalizedURL.includes('api.groq.com')) return KNOWN_MODEL_PROVIDERS[7]
-	if (normalizedURL.includes('api.together.xyz')) return KNOWN_MODEL_PROVIDERS[8]
-	if (normalizedURL.includes('api.mistral.ai')) return KNOWN_MODEL_PROVIDERS[9]
-	if (normalizedURL.includes('openai.azure.com')) return KNOWN_MODEL_PROVIDERS[10]
-	if (normalizedURL.includes('api.cloudflare.com')) return KNOWN_MODEL_PROVIDERS[11]
-	if (normalizedURL.includes('api.vercel.ai')) return KNOWN_MODEL_PROVIDERS[12]
-	if (normalizedURL.includes('dashscope')) return KNOWN_MODEL_PROVIDERS[13]
-	if (normalizedURL.includes('127.0.0.1:11434') || normalizedURL.includes('localhost:11434'))
-		return KNOWN_MODEL_PROVIDERS[14]
-	if (normalizedURL.includes('127.0.0.1:1234') || normalizedURL.includes('localhost:1234'))
-		return KNOWN_MODEL_PROVIDERS[15]
-	if (normalizedURL.includes('127.0.0.1:8000') || normalizedURL.includes('localhost:8000'))
-		return KNOWN_MODEL_PROVIDERS[16]
+	try {
+		parsedURL = new URL(baseURL)
+	} catch {
+		return null
+	}
+
+	const hostname = parsedURL.hostname.toLowerCase()
+	const localPort =
+		hostname === '127.0.0.1' || hostname === 'localhost' ? (parsedURL.port ?? null) : null
+
+	if (hostname === 'api.openai.com') return PROVIDER_BY_ID.get('openai') ?? null
+	if (hostname === 'api.anthropic.com') return PROVIDER_BY_ID.get('anthropic') ?? null
+	if (hostname === 'generativelanguage.googleapis.com') return PROVIDER_BY_ID.get('google') ?? null
+	if (hostname === 'openrouter.ai') return PROVIDER_BY_ID.get('openrouter') ?? null
+	if (hostname === 'api.fireworks.ai') return PROVIDER_BY_ID.get('fireworks') ?? null
+	if (hostname === 'api.deepseek.com') return PROVIDER_BY_ID.get('deepseek') ?? null
+	if (hostname === 'api.x.ai') return PROVIDER_BY_ID.get('xai') ?? null
+	if (hostname === 'api.groq.com') return PROVIDER_BY_ID.get('groq') ?? null
+	if (hostname === 'api.together.xyz') return PROVIDER_BY_ID.get('together') ?? null
+	if (hostname === 'api.mistral.ai') return PROVIDER_BY_ID.get('mistral') ?? null
+	if (hostname === 'openai.azure.com' || hostname.endsWith('.openai.azure.com'))
+		return PROVIDER_BY_ID.get('azure') ?? null
+	if (hostname === 'api.cloudflare.com') return PROVIDER_BY_ID.get('cloudflare') ?? null
+	if (hostname === 'api.vercel.ai') return PROVIDER_BY_ID.get('vercel') ?? null
+	if (hostname === 'dashscope.aliyuncs.com' || hostname.endsWith('.dashscope.aliyuncs.com'))
+		return PROVIDER_BY_ID.get('alibaba') ?? null
+	if (localPort === '11434') return PROVIDER_BY_ID.get('ollama') ?? null
+	if (localPort === '1234') return PROVIDER_BY_ID.get('lmstudio') ?? null
+	if (localPort === '8000') return PROVIDER_BY_ID.get('vllm') ?? null
 
 	return null
 }
