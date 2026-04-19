@@ -10,6 +10,8 @@
 
 The software is a **client-side only** tool with a "Bring Your Own Key" (BYOK) architecture. The software itself does **not** include any backend service. The software does **not** collect or transmit any user data on its own, and we do **not** have access to your browsing activity, page content, or task instructions through the software.
 
+The official project website does not include telemetry SDKs, analytics beacons, or external logging hooks.
+
 All data transmission occurs **only** between your browser and the LLM provider you configure. You are in full control of which provider receives your data.
 
 The project is open source under the [MIT License](https://github.com/alibaba/page-agent/blob/main/LICENSE) and can be audited at: https://github.com/alibaba/page-agent
