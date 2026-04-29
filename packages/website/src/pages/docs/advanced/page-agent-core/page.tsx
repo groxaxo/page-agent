@@ -157,6 +157,34 @@ const result = await agent.execute('Fill in the form with test data')`}
 							description: isZh ? 'API 调用失败时的最大重试次数' : 'Maximum retries on API failure',
 						},
 						{
+							name: 'transformRequestBody',
+							type: '(requestBody) => Record<string, unknown> | undefined',
+							description: isZh ? (
+								<>
+									在请求发送前转换最终 request body。可用于处理供应商特定的缓存提示或私有参数。查看{' '}
+									<Link
+										href="/features/models#prompt-caching"
+										className="text-blue-600 dark:text-blue-400 hover:underline"
+									>
+										主动缓存示例
+									</Link>
+									。
+								</>
+							) : (
+								<>
+									Transform the final request body before sending it. Useful for provider-specific
+									cache hints or private request parameters. See{' '}
+									<Link
+										href="/features/models#prompt-caching"
+										className="text-blue-600 dark:text-blue-400 hover:underline"
+									>
+										prompt caching examples
+									</Link>
+									.
+								</>
+							),
+						},
+						{
 							name: 'disableNamedToolChoice',
 							type: 'boolean',
 							defaultValue: 'false',

@@ -1,9 +1,9 @@
 import { OpenAIClient } from './OpenAIClient'
 import { DEFAULT_TEMPERATURE, LLM_MAX_RETRIES } from './constants'
-import { InvokeError, InvokeErrorType } from './errors'
+import { InvokeError, InvokeErrorTypes } from './errors'
 import type { InvokeOptions, InvokeResult, LLMClient, LLMConfig, Message, Tool } from './types'
 
-export { InvokeError, InvokeErrorType }
+export { InvokeError, InvokeErrorTypes }
 export type { InvokeOptions, InvokeResult, LLMClient, LLMConfig, Message, Tool }
 
 export function parseLLMConfig(config: LLMConfig): Required<LLMConfig> {
@@ -21,6 +21,7 @@ export function parseLLMConfig(config: LLMConfig): Required<LLMConfig> {
 		apiKey: config.apiKey || '',
 		temperature: config.temperature ?? DEFAULT_TEMPERATURE,
 		maxRetries: config.maxRetries ?? LLM_MAX_RETRIES,
+		transformRequestBody: config.transformRequestBody ?? ((requestBody) => requestBody),
 		disableNamedToolChoice: config.disableNamedToolChoice ?? false,
 		customFetch: (config.customFetch ?? fetch).bind(globalThis), // fetch will be illegal unless bound
 	}
